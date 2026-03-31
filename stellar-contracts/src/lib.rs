@@ -183,7 +183,7 @@ impl FiatBridge {
 
         // Transfer
         let token_client = token::Client::new(&env, &token);
-        token_client.transfer(&from, &env.current_contract_address(), &amount);
+        token_client.transfer(&from, env.current_contract_address(), &amount);
 
         // State update
         let receipt_id: u64 = env.storage().instance().get(&DataKey::ReceiptCounter).unwrap_or(0);
@@ -205,7 +205,9 @@ impl FiatBridge {
         let user_total: i128 = env.storage().instance().get(&user_key).unwrap_or(0);
         env.storage().instance().set(&user_key, &(user_total + amount));
 
+        #[allow(deprecated)]
         env.events().publish((Symbol::new(&env, "deposit"), from), amount);
+        #[allow(deprecated)]
         env.events().publish((Symbol::new(&env, "rcpt_issd"),), receipt_id);
 
         Ok(receipt_id)
@@ -222,6 +224,7 @@ impl FiatBridge {
             return Err(Error::InsufficientFunds);
         }
         client.transfer(&env.current_contract_address(), &to, &amount);
+        #[allow(deprecated)]
         env.events().publish((Symbol::new(&env, "withdraw"), to), amount);
         Ok(())
     }
@@ -409,7 +412,16 @@ impl FiatBridge {
     pub fn get_lock_period(env: Env) -> u32 { env.storage().instance().get(&DataKey::LockPeriod).unwrap_or(0) }
     pub fn get_cooldown(env: Env) -> u32 { env.storage().instance().get(&DataKey::CooldownLedgers).unwrap_or(0) }
     pub fn get_withdrawal_request(env: Env, id: u64) -> Option<WithdrawRequest> { env.storage().persistent().get(&DataKey::WithdrawQueue(id)) }
-    pub fn get_last_deposit_ledger(env: Env, user: Address) -> Option<u32> { env.storage().temporary().get(&DataKey::LastDeposit(user)) }
+    pub fn get_last_deposit_ledger(env: Env, user: Address) -> Option<u32> {
+        let key = DataKey::LastDeposit(user);
+        let cooldown: u32 = env.storage().instance().get(&DataKey::CooldownLedgers).unwrap_or(0);
+        if let Some(last) = env.storage().temporary().get::<DataKey, u32>(&key) {
+            if env.ledger().sequence() <= last.saturating_add(cooldown) {
+                return Some(last);
+            }
+        }
+        None
+    }
     pub fn get_oracle(env: Env) -> Option<Address> { env.storage().instance().get(&DataKey::Oracle) }
     pub fn get_fiat_limit(env: Env) -> Option<i128> { env.storage().instance().get(&DataKey::FiatLimit) }
     pub fn get_balance(env: Env) -> i128 {
@@ -428,14 +440,11 @@ impl FiatBridge {
     pub fn get_receipts_by_depositor(env: Env, depositor: Address, offset: u64, limit: u64) -> soroban_sdk::Vec<Receipt> {
         let counter: u64 = env.storage().instance().get(&DataKey::ReceiptCounter).unwrap_or(0);
         let mut results = soroban_sdk::Vec::new(&env);
-        let mut matched = 0u64;
-        for i in 0..counter {
+        for i in offset..counter {
+            if results.len() as u64 >= limit { break; }
             if let Some(r) = env.storage().persistent().get::<_, Receipt>(&DataKey::Receipt(i)) {
                 if r.depositor == depositor {
-                    if matched < offset { matched += 1; continue; }
-                    if results.len() as u64 >= limit { break; }
                     results.push_back(r);
-                    matched += 1;
                 }
             }
         }
@@ -461,7 +470,7 @@ impl FiatBridge {
         let mut config: TokenConfig = env.storage().persistent().get(&DataKey::TokenRegistry(token.clone()))
             .ok_or(Error::TokenNotWhitelisted)?;
         if amount > config.limit { return Err(Error::ExceedsLimit); }
-        soroban_sdk::token::Client::new(&env, &token).transfer(&payer, &env.current_contract_address(), &amount);
+        soroban_sdk::token::Client::new(&env, &token).transfer(&payer, env.current_contract_address(), &amount);
         config.total_deposited += amount;
         env.storage().persistent().set(&DataKey::TokenRegistry(token.clone()), &config);
         let user_key = DataKey::UserDeposited(beneficiary.clone());
@@ -474,6 +483,7 @@ impl FiatBridge {
         if cooldown > 0 {
             let key = DataKey::LastDeposit(beneficiary);
             env.storage().temporary().set(&key, &env.ledger().sequence());
+            env.storage().temporary().extend_ttl(&key, cooldown, cooldown);
         }
         Ok(receipt_id)
     }

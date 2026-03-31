@@ -1,6 +1,3 @@
-use soroban_sdk::testutils::Events;
-extern crate alloc;
-use alloc::format;
 // #[test]
 // fn test_minimal_event_emission() {
 //     use soroban_sdk::{Env, Symbol};
@@ -128,16 +125,17 @@ mod tests {
             bridge.try_deposit_for(&payer, &beneficiary2, &50, &token_addr, &Bytes::new(&env));
         assert_eq!(result2, Err(Ok(Error::CooldownActive)));
     }
+    #[allow(dead_code)]
     fn setup_bridge(
         env: &Env,
         limit: i128,
     ) -> (
         Address,
-        FiatBridgeClient,
+        FiatBridgeClient<'_>,
         Address,
         Address,
-        TokenClient,
-        StellarAssetClient,
+        TokenClient<'_>,
+        StellarAssetClient<'_>,
     ) {
         let contract_id = env.register(FiatBridge, ());
         let bridge = FiatBridgeClient::new(env, &contract_id);
@@ -149,15 +147,16 @@ mod tests {
     }
     extern crate std;
 
-    use super::*;
+    #[allow(unused_imports)]
     use crate::{DataKey, Error, FiatBridge, FiatBridgeClient};
-    use soroban_sdk::testutils::{Events, Ledger};
+    #[allow(unused_imports)]
     use soroban_sdk::{
-        testutils::Address as _,
+        testutils::{Address as _, Events, Ledger},
         token::{Client as TokenClient, StellarAssetClient},
         Address, Bytes, Env,
     };
 
+    #[allow(dead_code)]
     fn create_token<'a>(
         e: &Env,
         admin: &Address,
@@ -194,7 +193,7 @@ mod tests {
         let env = Env::default();
         let (_, bridge, _admin, _token_addr, _token, _token_sac) = setup_bridge(&env, 100);
         let result = bridge.try_migrate();
-        assert!(matches!(result, Err(_)));
+        assert!(result.is_err());
     }
 
     #[test]
@@ -412,18 +411,19 @@ mod tests {
                 .set(&DataKey::PendingAdmin, &nominated);
         });
         let wrong = Address::generate(&env);
-        // mock only wrong address auth — pending admin (nominated) did not authorize
+        // wrong address tries to accept — pending.require_auth() will abort
         env.mock_auths(&[soroban_sdk::testutils::MockAuth {
             address: &wrong,
             invoke: &soroban_sdk::testutils::MockAuthInvoke {
                 contract: &bridge.address,
                 fn_name: "accept_admin",
-                args: soroban_sdk::vec![&env].into(),
+                args: soroban_sdk::vec![&env],
                 sub_invokes: &[],
             },
         }]);
         let result = bridge.try_accept_admin();
-        assert_eq!(result, Err(Ok(Error::Unauthorized)));
+        // require_auth aborts when wrong caller — contract returns host error
+        assert!(result.is_err());
     }
 
     #[test]
@@ -713,7 +713,7 @@ mod tests {
     fn test_emergency_drain_invalid_recipient() {
         let env = Env::default();
         env.mock_all_auths();
-        let (contract_id, bridge, admin, token_addr, token, token_sac) = setup_bridge(&env, 1000);
+        let (contract_id, bridge, admin, token_addr, _token, token_sac) = setup_bridge(&env, 1000);
         token_sac.mint(&admin, &100);
         bridge.deposit(&admin, &100, &token_addr, &Bytes::new(&env));
         let result = bridge.try_emergency_drain(&contract_id);
@@ -739,6 +739,7 @@ mod tests {
         }
     }
 
+    #[allow(dead_code)]
     fn setup_oracle(env: &Env) -> Address {
         env.register(mock_oracle::MockOracle, ())
     }
@@ -789,9 +790,8 @@ mod tests {
         token_sac.mint(&user, &50_000);
 
         // 100 tokens at $0.10 = $10 = 1000 cents. Well within $10,000.
-        let receipt_id = bridge.deposit(&user, &100, &token_addr, &Bytes::new(&env));
-        assert!(receipt_id >= 0);
-        assert_eq!(bridge.get_balance(), 100);
+        let _receipt_id = bridge.deposit(&user, &100, &token_addr, &Bytes::new(&env));
+                assert_eq!(bridge.get_balance(), 100);
     }
 
     #[test]
