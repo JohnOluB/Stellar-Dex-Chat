@@ -121,7 +121,7 @@ describe(
     });
 
     it('should use success variant for retry success toast', async () => {
-      let isOnline = true;
+      const isOnline = true;
       Object.defineProperty(window.navigator, 'onLine', {
         configurable: true,
         get: () => isOnline,
@@ -184,7 +184,7 @@ describe(
     });
 
     it('should not trigger toast for immediate non-network errors', async () => {
-      let isOnline = true;
+      const isOnline = true;
       Object.defineProperty(window.navigator, 'onLine', {
         configurable: true,
         get: () => isOnline,
