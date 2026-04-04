@@ -15,6 +15,9 @@ import crypto from 'crypto';
 // ---------------------------------------------------------------------------
 const mockEnv = { PAYSTACK_SECRET_KEY: 'test-secret', PAYOUT_PROVIDER: 'paystack' } as Record<string, string | undefined>;
 vi.mock('@/lib/env', () => ({ get env() { return mockEnv; } }));
+vi.mock('@/lib/paymentStatusEvents', () => ({
+  publishPaymentStatus: vi.fn(),
+}));
 vi.mock('@/lib/telemetry', () => ({
   telemetry: {
     extractTraceFromHeaders: () => ({ traceId: 'trace1', spanId: 'span1' }),
