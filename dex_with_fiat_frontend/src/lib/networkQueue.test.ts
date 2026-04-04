@@ -63,7 +63,7 @@ describe(
 
       expect(result).toEqual({ data: 'success' });
       // Success toast should be called with correct variant
-      const calls = (toastStore.addToast as any).mock.calls;
+      const calls = (toastStore.addToast as jest.Mock).mock.calls;
       const hasSuccessToast = calls.some(
         (call: unknown[]) =>
           call[0] === 'Message sent!' && call[1] === 'success'
@@ -111,7 +111,7 @@ describe(
       }
 
       // Error toast should be called with correct variant
-      const calls = (toastStore.addToast as any).mock.calls;
+      const calls = (toastStore.addToast as jest.Mock).mock.calls;
       const hasErrorToast = calls.some(
         (call: unknown[]) =>
           call[0] === 'Could not send. Please try again.' &&
@@ -133,7 +133,7 @@ describe(
 
       expect(result).toEqual({ data: 'test' });
 
-      const calls = (toastStore.addToast as any).mock.calls;
+      const calls = (toastStore.addToast as jest.Mock).mock.calls;
       const successToastCall = calls.find(
         (call: unknown[]) => call[0] === 'Message sent!'
       );
@@ -173,7 +173,7 @@ describe(
         // Expected to fail
       }
 
-      const calls = (toastStore.addToast as any).mock.calls;
+      const calls = (toastStore.addToast as jest.Mock).mock.calls;
       const errorToastCall = calls.find(
         (call: unknown[]) => call[0] === 'Could not send. Please try again.'
       );
@@ -202,7 +202,7 @@ describe(
 
       // For non-network errors when online, failure happens immediately without retries
       // So there should be no toast calls for immediate failures
-      const calls = (toastStore.addToast as any).mock.calls;
+      const calls = (toastStore.addToast as jest.Mock).mock.calls;
       expect(calls.length).toBe(0);
     });
   }
