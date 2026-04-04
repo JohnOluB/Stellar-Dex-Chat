@@ -56,3 +56,54 @@ export const toastStore = {
   getToasts(): Toast[] { return [...toasts]; },
   clearToasts(): void { toasts.length = 0; notifyListeners(); },
 };
+
+export class ToastStore {
+  private dedupeWindowMs: number;
+  private defaultDurationMs: number;
+  private idFn: () => string;
+  private nowFn: () => number;
+  private toasts: Toast[] = [];
+  private listeners: Set<(toasts: Toast[]) => void> = new Set();
+
+  constructor(opts?: { dedupeWindowMs?: number; defaultDurationMs?: number; idFn?: () => string; nowFn?: () => number }) {
+    this.dedupeWindowMs = opts?.dedupeWindowMs ?? 0;
+    this.defaultDurationMs = opts?.defaultDurationMs ?? 5000;
+    this.idFn = opts?.idFn ?? (() => Math.random().toString(36).slice(2));
+    this.nowFn = opts?.nowFn ?? (() => Date.now());
+  }
+
+  addToast(input: string | { message: string; severity?: ToastSeverity; variant?: ToastVariant; durationMs?: number }, variant: ToastVariant = 'info'): string {
+    const message = typeof input === 'string' ? input : input.message;
+    const resolvedVariant: ToastVariant = typeof input === 'string' ? variant : (input.variant || input.severity as ToastVariant || variant);
+    const now = this.nowFn();
+    if (this.dedupeWindowMs > 0) {
+      const dupe = this.toasts.find(t => t.message === message && now - t.timestamp < this.dedupeWindowMs);
+      if (dupe) return dupe.id;
+    }
+    const toast: Toast = { id: this.idFn(), message, variant: resolvedVariant, severity: resolvedVariant, timestamp: now };
+    this.toasts.push(toast);
+    this.notify();
+    const duration = typeof input === 'object' ? input.durationMs : undefined;
+    const ms = duration ?? this.defaultDurationMs;
+    if (ms > 0) setTimeout(() => this.dismissToast(toast.id), ms);
+    return toast.id;
+  }
+
+  dismissToast(id: string): void {
+    const idx = this.toasts.findIndex(t => t.id === id);
+    if (idx > -1) { this.toasts.splice(idx, 1); this.notify(); }
+  }
+
+  removeToast(id: string): void { this.dismissToast(id); }
+
+  subscribe(listener: (toasts: Toast[]) => void): () => void {
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
+  }
+
+  getSnapshot(): Toast[] { return [...this.toasts]; }
+  getToasts(): Toast[] { return [...this.toasts]; }
+  clearToasts(): void { this.toasts = []; this.notify(); }
+
+  private notify(): void { this.listeners.forEach(l => l([...this.toasts])); }
+}

@@ -1,9 +1,10 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useIdempotentAction } from '../useIdempotentAction';
 
 describe('useIdempotentAction', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     jest.spyOn(console, 'warn').mockImplementation(() => {});
   });
 
@@ -13,7 +14,7 @@ describe('useIdempotentAction', () => {
 
   it('should execute action successfully', async () => {
     const { result } = renderHook(() => useIdempotentAction());
-    const mockAction = jest.fn().mockResolvedValue('success');
+    const mockAction = vi.fn().mockResolvedValue('success');
 
     let actionResult;
     await act(async () => {
@@ -29,7 +30,7 @@ describe('useIdempotentAction', () => {
     const { result } = renderHook(() =>
       useIdempotentAction({ cooldownMs: 1000 })
     );
-    const mockAction = jest.fn().mockResolvedValue('success');
+    const mockAction = vi.fn().mockResolvedValue('success');
 
     // First execution
     await act(async () => {
@@ -50,7 +51,7 @@ describe('useIdempotentAction', () => {
     const { result } = renderHook(() =>
       useIdempotentAction({ cooldownMs: 100 })
     );
-    const mockAction = jest.fn().mockResolvedValue('success');
+    const mockAction = vi.fn().mockResolvedValue('success');
 
     // First execution
     await act(async () => {
@@ -100,7 +101,7 @@ describe('useIdempotentAction', () => {
     const { result } = renderHook(() =>
       useIdempotentAction({ cooldownMs: 1000, logSuppressed: true })
     );
-    const mockAction = jest.fn().mockResolvedValue('success');
+    const mockAction = vi.fn().mockResolvedValue('success');
 
     await act(async () => {
       await result.current.execute(mockAction, 'test_action');
@@ -124,7 +125,7 @@ describe('useIdempotentAction', () => {
     const { result } = renderHook(() =>
       useIdempotentAction({ cooldownMs: 1000, logSuppressed: false })
     );
-    const mockAction = jest.fn().mockResolvedValue('success');
+    const mockAction = vi.fn().mockResolvedValue('success');
 
     await act(async () => {
       await result.current.execute(mockAction, 'test_action');
@@ -165,7 +166,7 @@ describe('useIdempotentAction', () => {
 
   it('should reset state correctly', async () => {
     const { result } = renderHook(() => useIdempotentAction());
-    const mockAction = jest.fn().mockResolvedValue('success');
+    const mockAction = vi.fn().mockResolvedValue('success');
 
     await act(async () => {
       await result.current.execute(mockAction, 'test_action');
@@ -183,7 +184,7 @@ describe('useIdempotentAction', () => {
 
   it('should handle action errors gracefully', async () => {
     const { result } = renderHook(() => useIdempotentAction());
-    const mockAction = jest.fn().mockRejectedValue(new Error('Action failed'));
+    const mockAction = vi.fn().mockRejectedValue(new Error('Action failed'));
 
     await act(async () => {
       try {
@@ -201,7 +202,7 @@ describe('useIdempotentAction', () => {
     const { result } = renderHook(() =>
       useIdempotentAction({ cooldownMs: 500 })
     );
-    const mockAction = jest.fn().mockResolvedValue('success');
+    const mockAction = vi.fn().mockResolvedValue('success');
 
     // Simulate rapid clicks
     const clicks = Array.from({ length: 5 }, () =>

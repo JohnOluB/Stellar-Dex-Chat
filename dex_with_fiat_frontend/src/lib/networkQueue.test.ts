@@ -36,7 +36,7 @@ describe(
 
     it('should trigger success toast when a retried request succeeds', async () => {
       // Simulate offline then online scenario
-      const isOnline = false;
+      let isOnline = false;
       Object.defineProperty(window.navigator, 'onLine', {
         configurable: true,
         get: () => isOnline,
@@ -72,7 +72,7 @@ describe(
     });
 
     it('should trigger error toast when request fails after MAX_RETRY', async () => {
-      const isOnline = true;
+      let isOnline = true;
       Object.defineProperty(window.navigator, 'onLine', {
         configurable: true,
         get: () => isOnline,
@@ -121,7 +121,7 @@ describe(
     });
 
     it('should use success variant for retry success toast', async () => {
-      const isOnline = true;
+      let isOnline = true;
       Object.defineProperty(window.navigator, 'onLine', {
         configurable: true,
         get: () => isOnline,
@@ -144,7 +144,7 @@ describe(
     });
 
     it('should use error variant for final failure toast', async () => {
-      const isOnline = true;
+      let isOnline = true;
       Object.defineProperty(window.navigator, 'onLine', {
         configurable: true,
         get: () => isOnline,
@@ -184,7 +184,7 @@ describe(
     });
 
     it('should not trigger toast for immediate non-network errors', async () => {
-      const isOnline = true;
+      let isOnline = true;
       Object.defineProperty(window.navigator, 'onLine', {
         configurable: true,
         get: () => isOnline,
