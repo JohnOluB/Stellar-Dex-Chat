@@ -30,11 +30,12 @@ vi.mock('@/lib/telemetry', () => ({
     logWithTrace: vi.fn(),
   },
 }));
+const mockRecord = { clientSessionId: 'session-1', reference: 'ref123', status: 'pending', amount: 5000 };
 vi.mock('@/lib/transferStore', () => ({
   isReplayEvent: () => false,
   replayCacheStats: () => ({ size: 0, ttlMs: 0, maxSize: 0 }),
-  getTransferStatus: vi.fn().mockReturnValue({ clientSessionId: 'session-1', reference: 'ref123', status: 'pending', amount: 5000 }),
-  setTransferStatus: vi.fn(),
+  getTransferStatus: () => mockRecord,
+  setTransferStatus: () => ({ ...mockRecord, status: 'success' }),
   transferStore: { set: vi.fn(), get: vi.fn() },
 }));
 
