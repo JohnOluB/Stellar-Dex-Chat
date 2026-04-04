@@ -1,6 +1,11 @@
 'use client';
-export const dynamic = 'force-dynamic';
-import StellarChatInterface from '@/components/StellarChatInterface';
+import dynamic from 'next/dynamic';
+
+const StellarChatInterface = dynamic(
+  () => import('@/components/StellarChatInterface'),
+  { ssr: false }
+);
+
 export default function ChatPage() {
   return (
     <main className="h-screen w-screen overflow-hidden">
