@@ -78,6 +78,7 @@ describe(
         get: () => isOnline,
       });
 
+      let attemptCount = 0;
       const mockTask = vi.fn().mockImplementation(async () => {
         attemptCount++;
         // Always fail with network error

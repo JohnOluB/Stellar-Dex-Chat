@@ -30,6 +30,7 @@ vi.mock('@/lib/telemetry', () => ({
 vi.mock('@/lib/transferStore', () => ({
   isReplayEvent: () => false,
   replayCacheStats: () => ({ size: 0, ttlMs: 0, maxSize: 0 }),
+  getTransferStatus: vi.fn(),
   transferStore: { set: vi.fn(), get: vi.fn() },
 }));
 

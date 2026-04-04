@@ -1,15 +1,15 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useIdempotentAction } from '../useIdempotentAction';
 
 describe('useIdempotentAction', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    jest.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('should execute action successfully', async () => {
@@ -73,7 +73,7 @@ describe('useIdempotentAction', () => {
 
   it('should track isProcessing state correctly', async () => {
     const { result } = renderHook(() => useIdempotentAction());
-    const mockAction = jest.fn(
+    const mockAction = vi.fn(
       () => new Promise((resolve) => setTimeout(() => resolve('success'), 100))
     );
 
@@ -97,7 +97,7 @@ describe('useIdempotentAction', () => {
   });
 
   it('should log suppressed duplicates when enabled', async () => {
-    const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+    const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation();
     const { result } = renderHook(() =>
       useIdempotentAction({ cooldownMs: 1000, logSuppressed: true })
     );
@@ -121,7 +121,7 @@ describe('useIdempotentAction', () => {
   });
 
   it('should not log suppressed duplicates when disabled', async () => {
-    const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+    const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation();
     const { result } = renderHook(() =>
       useIdempotentAction({ cooldownMs: 1000, logSuppressed: false })
     );
@@ -141,7 +141,7 @@ describe('useIdempotentAction', () => {
   it('should generate unique idempotency keys', async () => {
     const { result } = renderHook(() => useIdempotentAction({ cooldownMs: 100 }));
     const capturedKeys: string[] = [];
-    const mockAction = jest.fn((key: string) => {
+    const mockAction = vi.fn((key: string) => {
       capturedKeys.push(key);
       return Promise.resolve('success');
     });
@@ -219,7 +219,7 @@ describe('useIdempotentAction', () => {
 
   it('should block submissions while processing', async () => {
     const { result } = renderHook(() => useIdempotentAction());
-    const mockAction = jest.fn(
+    const mockAction = vi.fn(
       () => new Promise((resolve) => setTimeout(() => resolve('success'), 200))
     );
 

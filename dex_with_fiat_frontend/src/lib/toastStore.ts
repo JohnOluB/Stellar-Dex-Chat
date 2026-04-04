@@ -60,27 +60,27 @@ export const toastStore = {
 export class ToastStore {
   private dedupeWindowMs: number;
   private defaultDurationMs: number;
-  private idFn: () => string;
-  private nowFn: () => number;
+  private generateId: () => string;
+  private now: () => number;
   private toasts: Toast[] = [];
   private listeners: Set<(toasts: Toast[]) => void> = new Set();
 
-  constructor(opts?: { dedupeWindowMs?: number; defaultDurationMs?: number; idFn?: () => string; nowFn?: () => number }) {
+  constructor(opts?: { dedupeWindowMs?: number; defaultDurationMs?: number; generateId?: () => string; now?: () => number }) {
     this.dedupeWindowMs = opts?.dedupeWindowMs ?? 0;
     this.defaultDurationMs = opts?.defaultDurationMs ?? 5000;
-    this.idFn = opts?.idFn ?? (() => Math.random().toString(36).slice(2));
-    this.nowFn = opts?.nowFn ?? (() => Date.now());
+    this.generateId = opts?.generateId ?? (() => Math.random().toString(36).slice(2, 12));
+    this.now = opts?.now ?? (() => Date.now());
   }
 
-  addToast(input: string | { message: string; severity?: ToastSeverity; variant?: ToastVariant; durationMs?: number }, variant: ToastVariant = 'info'): string {
+  addToast(input: string | { message: string; severity?: ToastSeverity; variant?: ToastVariant; durationMs?: number }, variant: ToastVariant = 'info'): string | null {
     const message = typeof input === 'string' ? input : input.message;
     const resolvedVariant: ToastVariant = typeof input === 'string' ? variant : (input.variant || input.severity as ToastVariant || variant);
-    const now = this.nowFn();
+    const now = this.now();
     if (this.dedupeWindowMs > 0) {
       const dupe = this.toasts.find(t => t.message === message && now - t.timestamp < this.dedupeWindowMs);
-      if (dupe) return dupe.id;
+      if (dupe) return null;
     }
-    const toast: Toast = { id: this.idFn(), message, variant: resolvedVariant, severity: resolvedVariant, timestamp: now };
+    const toast: Toast = { id: this.generateId(), message, variant: resolvedVariant, severity: resolvedVariant, timestamp: now };
     this.toasts.push(toast);
     this.notify();
     const duration = typeof input === 'object' ? input.durationMs : undefined;
