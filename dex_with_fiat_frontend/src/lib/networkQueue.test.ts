@@ -36,7 +36,7 @@ describe(
 
     it('should trigger success toast when a retried request succeeds', async () => {
       // Simulate offline then online scenario
-      let isOnline = false;
+      const isOnline = false;
       Object.defineProperty(window.navigator, 'onLine', {
         configurable: true,
         get: () => isOnline,
@@ -65,15 +65,15 @@ describe(
       // Success toast should be called with correct variant
       const calls = (toastStore.addToast as any).mock.calls;
       const hasSuccessToast = calls.some(
-        (call: any[]) =>
+        (call: unknown[]) =>
           call[0] === 'Message sent!' && call[1] === 'success'
       );
       expect(hasSuccessToast).toBe(true);
     });
 
     it('should trigger error toast when request fails after MAX_RETRY', async () => {
-      let isOnline = true;
-      let attemptCount = 0;
+      const isOnline = true;
+      const _attemptCount = 0;
       Object.defineProperty(window.navigator, 'onLine', {
         configurable: true,
         get: () => isOnline,
@@ -114,7 +114,7 @@ describe(
       // Error toast should be called with correct variant
       const calls = (toastStore.addToast as any).mock.calls;
       const hasErrorToast = calls.some(
-        (call: any[]) =>
+        (call: unknown[]) =>
           call[0] === 'Could not send. Please try again.' &&
           call[1] === 'error'
       );
@@ -122,7 +122,7 @@ describe(
     });
 
     it('should use success variant for retry success toast', async () => {
-      let isOnline = true;
+      const isOnline = true;
       Object.defineProperty(window.navigator, 'onLine', {
         configurable: true,
         get: () => isOnline,
@@ -136,7 +136,7 @@ describe(
 
       const calls = (toastStore.addToast as any).mock.calls;
       const successToastCall = calls.find(
-        (call: any[]) => call[0] === 'Message sent!'
+        (call: unknown[]) => call[0] === 'Message sent!'
       );
 
       if (successToastCall) {
@@ -145,7 +145,7 @@ describe(
     });
 
     it('should use error variant for final failure toast', async () => {
-      let isOnline = true;
+      const isOnline = true;
       Object.defineProperty(window.navigator, 'onLine', {
         configurable: true,
         get: () => isOnline,
@@ -176,7 +176,7 @@ describe(
 
       const calls = (toastStore.addToast as any).mock.calls;
       const errorToastCall = calls.find(
-        (call: any[]) => call[0] === 'Could not send. Please try again.'
+        (call: unknown[]) => call[0] === 'Could not send. Please try again.'
       );
 
       if (errorToastCall) {
@@ -185,7 +185,7 @@ describe(
     });
 
     it('should not trigger toast for immediate non-network errors', async () => {
-      let isOnline = true;
+      const isOnline = true;
       Object.defineProperty(window.navigator, 'onLine', {
         configurable: true,
         get: () => isOnline,

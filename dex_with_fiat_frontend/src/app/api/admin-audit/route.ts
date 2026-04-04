@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
     if (startDate) {
       try {
         filter.startDate = new Date(startDate);
-      } catch (error) {
+      } catch (_error) {
         return NextResponse.json(
           { error: 'Invalid startDate format. Use ISO 8601 format.' },
           { status: 400 }
@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
     if (endDate) {
       try {
         filter.endDate = new Date(endDate);
-      } catch (error) {
+      } catch (_error) {
         return NextResponse.json(
           { error: 'Invalid endDate format. Use ISO 8601 format.' },
           { status: 400 }
@@ -103,12 +103,12 @@ export async function GET(request: NextRequest) {
         },
       }
     );
-  } catch (error) {
-    console.error('Error retrieving audit entries:', error);
+  } catch (_error) {
+    console.error('Error retrieving audit entries:', _error);
     return NextResponse.json(
       {
         error: 'Failed to retrieve audit entries',
-        message: error instanceof Error ? error.message : 'Unknown error',
+        message: _error instanceof Error ? _error.message : 'Unknown error',
       },
       { status: 500 }
     );

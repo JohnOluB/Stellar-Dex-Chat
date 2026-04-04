@@ -46,7 +46,6 @@ import NotificationsCenter from './NotificationsCenter';
 import StellarFiatModal from './StellarFiatModal';
 import UserSettings from './UserSettings';
 import WalletConnectionTimeline from './WalletConnectionTimeline';
-import { clearExpiredDrafts } from '@/lib/draftUtils';
 import { useTranslation } from '@/contexts/TranslationContext';
 import ReceiptDrawer from './ReceiptDrawerWrapper';
 import { useTxHistory } from '@/hooks/useTxHistory';
