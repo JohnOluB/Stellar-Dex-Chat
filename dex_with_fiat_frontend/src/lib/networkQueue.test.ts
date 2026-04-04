@@ -78,9 +78,9 @@ describe(
         get: () => isOnline,
       });
 
-      let attemptCount = 0;
+      let _attemptCount = 0;
       const mockTask = vi.fn().mockImplementation(async () => {
-        attemptCount++;
+        _attemptCount++;
         // Always fail with network error
         throw new Error('failed to fetch');
       });
